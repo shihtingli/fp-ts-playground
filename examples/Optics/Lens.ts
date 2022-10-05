@@ -1,3 +1,4 @@
+import { pipe } from 'fp-ts/lib/function'
 import { Lens } from 'monocle-ts'
 
 export interface Street {
@@ -85,3 +86,34 @@ const person: PersonType = { name: 'Giulio', age: 42 }
 const age = Lens.fromProp<PersonType>()('age')
 
 console.log(age.set(43)(person)) // => { name: 'Giulio', age: 43 }
+
+//compose all set
+
+type PersonType2 = {
+  name: string
+  age: number
+  address: Address
+}
+
+const changePerson =
+  (age: number) =>
+  (streetName: string) =>
+  (person: PersonType2): PersonType2 =>
+    pipe(
+      person,
+      Lens.fromProp<PersonType2>()('age').set(age),
+      Lens.fromPath<PersonType2>()(['address', 'street', 'name']).set(streetName)
+    )
+
+const ST: PersonType2 = {
+  name: 'ST',
+  age: 18,
+  address: {
+    city: 'Hsin-Chu',
+    street: {
+      num: 1,
+      name: 'happy'
+    }
+  }
+}
+console.log(changePerson(40)('sad')(ST))
